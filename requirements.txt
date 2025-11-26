@@ -1,0 +1,23 @@
+# VozNota API - Dependencias de Python
+# Backend de transcripción de voz con IBM Watson y Cloudant
+
+# FastAPI Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# IBM Watson Services
+ibm-watson==8.0.0
+
+# IBM Cloudant (usa su propia versión de ibm-cloud-sdk-core)
+ibmcloudant==0.8.0
+
+# Pydantic para validación
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Manejo de variables de entorno
+python-dotenv==1.0.0
+
+# Utilidades
+requests==2.31.0

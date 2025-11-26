@@ -1,0 +1,45 @@
+# Archivos a ignorar en Git
+
+# Entornos virtuales de Python
+venv/
+env/
+ENV/
+.venv/
+
+# Variables de entorno con credenciales
+.env
+
+# Cache de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Archivos de audio de prueba (pueden ser grandes)
+sample_audio/*.mp3
+sample_audio/*.wav
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.temp
+.cache/
+
+# Distribución
+build/
+dist/
+*.egg-info/
