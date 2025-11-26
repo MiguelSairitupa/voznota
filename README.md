@@ -21,10 +21,12 @@ IBM Cloudant (Base de Datos NoSQL)
 - ✅ Almacenamiento en IBM Cloudant
 - ✅ Generación automática de títulos
 - ✅ Documentación interactiva (Swagger UI)
-- ✅ Preparado para IBM Cloud Code Engine
+- ✅ **Listo para desplegar en IBM Cloud Code Engine**
+- ✅ **Compatible con Cloud Native Buildpack**
 - ✅ CORS configurado para Flutter
 - ✅ Manejo robusto de errores
 - ✅ Logging detallado
+- ✅ Auto-scaling y serverless
 
 ## 📋 Requisitos Previos
 
@@ -315,28 +317,59 @@ voznota/
 
 ## 🚢 Despliegue en IBM Cloud Code Engine
 
-### 1. Crear Dockerfile (opcional):
+Este proyecto está **completamente preparado** para desplegarse en IBM Code Engine usando Cloud Native Buildpack.
 
-```dockerfile
-FROM python:3.9-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
-```
+### ✅ Archivos de Despliegue Incluidos
 
-### 2. Desplegar en Code Engine:
+- **Procfile** - Define cómo iniciar la aplicación
+- **runtime.txt** - Especifica Python 3.11
+- **.dockerignore** - Optimiza el build excluyendo archivos innecesarios
+- **requirements.txt** - Todas las dependencias
+- **DEPLOYMENT.md** - Guía completa paso a paso
 
-```bash
-ibmcloud ce application create --name voznota-api \
-  --image python:3.9 \
-  --build-source . \
-  --port 8080 \
-  --env WATSON_STT_API_KEY=tu-key \
-  --env WATSON_STT_URL=tu-url \
-  --env CLOUDANT_URL=tu-cloudant-url
-```
+### 🚀 Despliegue Rápido (GUI)
+
+1. **Verificar que todo está listo:**
+   ```powershell
+   python check_deployment.py
+   ```
+
+2. **Subir código a Git:**
+   ```bash
+   git init
+   git add .
+   git commit -m "Deploy to Code Engine"
+   git push origin main
+   ```
+
+3. **Crear aplicación en Code Engine:**
+   - Ve a [IBM Cloud Console](https://cloud.ibm.com/)
+   - Busca "Code Engine" y crea un proyecto
+   - Click "Create Application"
+   - Selecciona tu repositorio Git
+   - Elige **"Cloud Native Buildpack"** como estrategia
+   - Configura las variables de entorno (ver abajo)
+   - Click "Create"
+
+4. **Variables de entorno requeridas en Code Engine:**
+   ```
+   WATSON_STT_API_KEY=tu-api-key
+   WATSON_STT_URL=https://api.us-south.speech-to-text.watson.cloud.ibm.com
+   WATSON_STT_MODEL=es-ES_BroadbandModel
+   CLOUDANT_URL=https://apikey:tu-key@tu-host.cloudantnosqldb.appdomain.cloud
+   CLOUDANT_DB_NAME=voznota_transcriptions
+   ```
+
+5. **¡Listo!** Code Engine te dará una URL pública para tu API.
+
+### 📖 Guía Detallada
+
+Ver **[DEPLOYMENT.md](./DEPLOYMENT.md)** para:
+- Instrucciones paso a paso con capturas
+- Configuración de secrets y variables de entorno
+- Troubleshooting y mejores prácticas
+- Configuración de auto-scaling
+- CI/CD automation
 
 ## 🔒 Seguridad
 
