@@ -195,6 +195,127 @@ async def transcribe_audio(
             detail=f"Error interno del servidor: {str(e)}"
         )
 
+@app.get(
+    "/api/notes",
+    responses={
+        500: {"model": ErrorResponse, "description": "Internal Server Error"}
+    },
+    tags=["Notes"]
+)
+async def get_all_notes(limit: int = 100):
+    """
+    Obtiene todas las notas/transcripciones guardadas en Cloudant
+    
+    **Parámetros:**
+    - limit: Número máximo de notas a devolver (default: 100)
+    
+    **Retorna:**
+    - Lista de notas con sus transcripciones
+    """
+    try:
+        logger.info(f"Obteniendo lista de notas (límite: {limit})")
+        
+        notes = cloudant_service.list_transcriptions(limit=limit)
+        logger.info(f"Se encontraron {len(notes)} notas")
+        
+        return notes
+    
+    except Exception as e:
+        logger.error(f"Error al obtener notas: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener las notas: {str(e)}"
+        )
+
+@app.get(
+    "/api/notes/{note_id}",
+    responses={
+        404: {"model": ErrorResponse, "description": "Note Not Found"},
+        500: {"model": ErrorResponse, "description": "Internal Server Error"}
+    },
+    tags=["Notes"]
+)
+async def get_note_by_id(note_id: str):
+    """
+    Obtiene una nota específica por su ID
+    
+    **Parámetros:**
+    - note_id: ID del documento en Cloudant
+    
+    **Retorna:**
+    - Documento completo de la nota
+    """
+    try:
+        logger.info(f"Obteniendo nota con ID: {note_id}")
+        
+        note = cloudant_service.get_transcription(note_id)
+        
+        if not note:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Nota con ID {note_id} no encontrada"
+            )
+        
+        return note
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al obtener nota {note_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener la nota: {str(e)}"
+        )
+
+@app.delete(
+    "/api/notes/{note_id}",
+    responses={
+        404: {"model": ErrorResponse, "description": "Note Not Found"},
+        500: {"model": ErrorResponse, "description": "Internal Server Error"}
+    },
+    tags=["Notes"]
+)
+async def delete_note(note_id: str):
+    """
+    Elimina una nota de Cloudant
+    
+    **Parámetros:**
+    - note_id: ID del documento a eliminar
+    
+    **Retorna:**
+    - Confirmación de eliminación exitosa
+    """
+    try:
+        logger.info(f"Eliminando nota con ID: {note_id}")
+        
+        # Primero obtener el documento para tener el _rev
+        note = cloudant_service.get_transcription(note_id)
+        
+        if not note:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Nota con ID {note_id} no encontrada"
+            )
+        
+        # Eliminar el documento
+        cloudant_service.delete_transcription(note_id, note.get('_rev'))
+        
+        logger.info(f"Nota {note_id} eliminada exitosamente")
+        
+        return {
+            "success": True,
+            "message": f"Nota {note_id} eliminada exitosamente"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al eliminar nota {note_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al eliminar la nota: {str(e)}"
+        )
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     """Manejador global de excepciones"""

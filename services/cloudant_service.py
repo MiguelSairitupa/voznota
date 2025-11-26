@@ -178,6 +178,39 @@ class CloudantService:
         except Exception as e:
             logger.error(f"Error al listar transcripciones: {str(e)}")
             raise
+    
+    def delete_transcription(self, doc_id: str, rev: str) -> bool:
+        """
+        Elimina una transcripción por ID
+        
+        Args:
+            doc_id: ID del documento
+            rev: Revisión del documento (_rev)
+        
+        Returns:
+            bool: True si se eliminó exitosamente
+        
+        Raises:
+            Exception: Si hay error al eliminar
+        """
+        try:
+            logger.info(f"Eliminando documento {doc_id} (rev: {rev})")
+            
+            response = self.client.delete_document(
+                db=self.db_name,
+                doc_id=doc_id,
+                rev=rev
+            ).get_result()
+            
+            if response.get('ok'):
+                logger.info(f"Documento {doc_id} eliminado exitosamente")
+                return True
+            else:
+                raise Exception(f"La eliminación no fue exitosa: {response}")
+        
+        except Exception as e:
+            logger.error(f"Error al eliminar documento {doc_id}: {str(e)}")
+            raise Exception(f"Error al eliminar transcripción: {str(e)}")
 
 # Instancia global del servicio
 cloudant_service = CloudantService()
