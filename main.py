@@ -3,7 +3,7 @@ VozNota API - Backend de Transcripción de Voz
 FastAPI application para transcribir audio usando IBM Watson STT y guardar en Cloudant
 """
 import logging
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 from fastapi import FastAPI, File, UploadFile, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -72,7 +72,7 @@ async def health_check():
     return HealthResponse(
         status="healthy",
         version=settings.APP_VERSION,
-        timestamp=datetime.utcnow().isoformat()
+        timestamp=datetime.now().isoformat()
     )
 
 @app.post(
@@ -121,6 +121,9 @@ async def transcribe_audio(
         # Leer contenido del archivo
         audio_content = await audio.read()
         audio_size = len(audio_content)
+        
+        logger.info(f"Audio leído: {audio_size} bytes")
+        logger.info(f"Primeros 20 bytes (hex): {audio_content[:20].hex()}")
         
         # Validar tamaño del archivo
         if audio_size > settings.MAX_FILE_SIZE:
@@ -180,7 +183,7 @@ async def transcribe_audio(
             titulo=titulo,
             texto=texto_transcrito,
             id_documento=doc_id,
-            fecha=datetime.utcnow().isoformat()
+            fecha=datetime.now().isoformat()
         )
         
         logger.info(f"Transcripción completada exitosamente. ID: {doc_id}")

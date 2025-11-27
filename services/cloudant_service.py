@@ -107,8 +107,8 @@ class CloudantService:
             Exception: Si hay error al guardar
         """
         try:
-            # Crear documento con timestamp
-            fecha = datetime.utcnow().isoformat()
+            # Crear documento con timestamp en hora local
+            fecha = datetime.now().isoformat()
             
             document = {
                 "titulo": titulo,

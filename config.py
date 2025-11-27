@@ -27,7 +27,7 @@ class Settings:
     
     # Configuración de archivos
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10 MB
-    ALLOWED_AUDIO_FORMATS: list = ["audio/wav", "audio/mpeg", "audio/mp3", "audio/x-wav"]
+    ALLOWED_AUDIO_FORMATS: list = ["audio/wav", "audio/mpeg", "audio/mp3", "audio/x-wav", "application/octet-stream", "audio/wave"]
     ALLOWED_EXTENSIONS: list = [".wav", ".mp3"]
     
     # CORS

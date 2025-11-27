@@ -40,8 +40,16 @@ class WatsonSTTService:
         """
         try:
             logger.info(f"Iniciando transcripción de audio (tipo: {content_type})")
+            logger.info(f"Tipo de audio_file: {type(audio_file)}")
+            
+            # Si es bytes, obtener el tamaño
+            if isinstance(audio_file, bytes):
+                logger.info(f"Tamaño del audio en bytes: {len(audio_file)}")
             
             # Configurar parámetros de reconocimiento
+            logger.info(f"Usando modelo: {settings.WATSON_STT_MODEL}")
+            logger.info(f"URL de Watson: {settings.WATSON_STT_URL}")
+            
             response = self.speech_to_text.recognize(
                 audio=audio_file,
                 content_type=content_type,
@@ -51,6 +59,8 @@ class WatsonSTTService:
                 smart_formatting=True,  # Formateo inteligente de números, fechas, etc.
                 speaker_labels=False
             ).get_result()
+            
+            logger.info(f"Respuesta de Watson recibida: {response}")
             
             # Extraer el texto de la respuesta
             if response and 'results' in response and len(response['results']) > 0:
