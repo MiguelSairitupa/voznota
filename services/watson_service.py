@@ -50,31 +50,65 @@ class WatsonSTTService:
             logger.info(f"Usando modelo: {settings.WATSON_STT_MODEL}")
             logger.info(f"URL de Watson: {settings.WATSON_STT_URL}")
             
-            response = self.speech_to_text.recognize(
-                audio=audio_file,
-                content_type=content_type,
-                model=settings.WATSON_STT_MODEL,
-                timestamps=False,
-                word_confidence=False,
-                smart_formatting=True,  # Formateo inteligente de números, fechas, etc.
-                speaker_labels=False
-            ).get_result()
+            # Lista de content types para intentar (orden de prioridad)
+            content_types_to_try = [content_type]
             
-            logger.info(f"Respuesta de Watson recibida: {response}")
+            # Si viene como WAV, probar también WebM y Ogg (formatos comunes en navegadores)
+            if "wav" in content_type.lower():
+                content_types_to_try.extend([
+                    "audio/webm",
+                    "audio/webm;codecs=opus",
+                    "audio/ogg;codecs=opus",
+                    "audio/mp4",
+                    "audio/mpeg"
+                ])
             
-            # Extraer el texto de la respuesta
-            if response and 'results' in response and len(response['results']) > 0:
-                transcripts = []
-                for result in response['results']:
-                    if 'alternatives' in result and len(result['alternatives']) > 0:
-                        transcript = result['alternatives'][0].get('transcript', '')
-                        transcripts.append(transcript)
+            last_error = None
+            
+            # Intentar con diferentes content types
+            for ct in content_types_to_try:
+                try:
+                    logger.info(f"Intentando transcribir con content_type: {ct}")
+                    
+                    response = self.speech_to_text.recognize(
+                        audio=audio_file,
+                        content_type=ct,
+                        model=settings.WATSON_STT_MODEL,
+                        timestamps=False,
+                        word_confidence=False,
+                        smart_formatting=True,
+                        speaker_labels=False
+                    ).get_result()
+                    
+                    logger.info(f"✓ Respuesta de Watson recibida con {ct}")
+                    
+                    # Extraer el texto de la respuesta
+                    if response and 'results' in response and len(response['results']) > 0:
+                        transcripts = []
+                        for result in response['results']:
+                            if 'alternatives' in result and len(result['alternatives']) > 0:
+                                transcript = result['alternatives'][0].get('transcript', '')
+                                transcripts.append(transcript)
+                        
+                        full_text = ' '.join(transcripts).strip()
+                        logger.info(f"✓ Transcripción exitosa con {ct}. Longitud: {len(full_text)} caracteres")
+                        return full_text
+                    else:
+                        logger.warning(f"Watson STT no devolvió resultados con {ct}")
                 
-                full_text = ' '.join(transcripts).strip()
-                logger.info(f"Transcripción exitosa. Longitud del texto: {len(full_text)} caracteres")
-                return full_text
+                except Exception as e:
+                    error_msg = str(e)
+                    logger.warning(f"✗ Falló con {ct}: {error_msg}")
+                    last_error = e
+                    # Si el error no es de formato, no intentar otros formatos
+                    if "transcode" not in error_msg.lower():
+                        raise
+                    continue
+            
+            # Si llegamos aquí, ningún content type funcionó
+            if last_error:
+                raise last_error
             else:
-                logger.warning("Watson STT no devolvió resultados")
                 return ""
         
         except Exception as e:
