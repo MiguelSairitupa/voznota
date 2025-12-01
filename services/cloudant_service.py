@@ -109,8 +109,10 @@ class CloudantService:
             Exception: Si hay error al guardar
         """
         try:
-            # Crear documento con timestamp en hora local
-            fecha = datetime.now().isoformat()
+            # Crear documento con timestamp en hora de Perú (UTC-5)
+            from datetime import timezone, timedelta
+            peru_tz = timezone(timedelta(hours=-5))
+            fecha = datetime.now(peru_tz).isoformat()
             
             document = {
                 "user_id": user_id,

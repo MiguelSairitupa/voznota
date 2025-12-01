@@ -334,12 +334,15 @@ async def transcribe_audio(
                 detail=f"Error al guardar la transcripción: {str(e)}"
             )
         
-        # Preparar respuesta
+        # Preparar respuesta con zona horaria de Perú (UTC-5)
+        peru_tz = timezone(timedelta(hours=-5))
+        fecha_peru = datetime.now(peru_tz).isoformat()
+        
         response = TranscriptionResponse(
             titulo=titulo,
             texto=texto_transcrito,
             id_documento=doc_id,
-            fecha=datetime.now().isoformat()
+            fecha=fecha_peru
         )
         
         logger.info(f"Transcripción completada exitosamente. ID: {doc_id}")
