@@ -15,10 +15,16 @@ ibmcloudant==0.8.0
 
 # Pydantic para validación
 pydantic==2.5.3
+pydantic[email]==2.5.3
 pydantic-settings==2.1.0
 
 # Manejo de variables de entorno
 python-dotenv==1.0.0
+
+# Autenticación y Seguridad
+python-jose[cryptography]==3.5.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.1.2
 
 # Utilidades
 requests==2.31.0

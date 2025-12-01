@@ -24,6 +24,12 @@ class Settings:
     # IBM Cloudant
     CLOUDANT_URL: str = os.getenv("CLOUDANT_URL", "")
     CLOUDANT_DB_NAME: str = os.getenv("CLOUDANT_DB_NAME", "voznota_transcriptions")
+    USERS_DB_NAME: str = os.getenv("USERS_DB_NAME", "voznota_users")
+    
+    # JWT Authentication
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production-please")
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "43200"))  # 30 días
     
     # Configuración de archivos
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10 MB
