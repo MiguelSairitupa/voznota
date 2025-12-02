@@ -87,7 +87,8 @@ class CloudantService:
     def save_transcription(
         self, 
         titulo: str, 
-        texto: str, 
+        texto: str,
+        user_id: str,
         audio_format: str = None,
         audio_size: int = None
     ) -> str:
@@ -97,6 +98,7 @@ class CloudantService:
         Args:
             titulo: Título de la nota
             texto: Texto completo transcrito
+            user_id: ID del usuario dueño de la transcripción
             audio_format: Formato del audio original
             audio_size: Tamaño del archivo de audio en bytes
         
@@ -107,10 +109,13 @@ class CloudantService:
             Exception: Si hay error al guardar
         """
         try:
-            # Crear documento con timestamp en hora local
-            fecha = datetime.now().isoformat()
+            # Crear documento con timestamp en hora de Perú (UTC-5)
+            from datetime import timezone, timedelta
+            peru_tz = timezone(timedelta(hours=-5))
+            fecha = datetime.now(peru_tz).isoformat()
             
             document = {
+                "user_id": user_id,
                 "titulo": titulo,
                 "texto": texto,
                 "fecha": fecha,
@@ -118,7 +123,7 @@ class CloudantService:
                 "audio_size": audio_size
             }
             
-            logger.info(f"Guardando transcripción en Cloudant: {titulo}")
+            logger.info(f"Guardando transcripción en Cloudant: {titulo} (usuario: {user_id})")
             
             # Guardar documento
             response = self.client.post_document(
@@ -156,24 +161,38 @@ class CloudantService:
             logger.error(f"Error al obtener documento {doc_id}: {str(e)}")
             raise
     
-    def list_transcriptions(self, limit: int = 100) -> list:
+    def list_transcriptions(self, user_id: str = None, limit: int = 100) -> list:
         """
-        Lista todas las transcripciones
+        Lista todas las transcripciones, opcionalmente filtradas por usuario
         
         Args:
+            user_id: ID del usuario (opcional, si se proporciona filtra por usuario)
             limit: Número máximo de documentos a devolver
         
         Returns:
             list: Lista de transcripciones
         """
         try:
-            response = self.client.post_all_docs(
-                db=self.db_name,
-                include_docs=True,
-                limit=limit
-            ).get_result()
+            if user_id:
+                # Filtrar por user_id usando find
+                selector = {"user_id": user_id}
+                response = self.client.post_find(
+                    db=self.db_name,
+                    selector=selector,
+                    limit=limit
+                ).get_result()
+                
+                documents = response.get('docs', [])
+            else:
+                # Listar todos los documentos
+                response = self.client.post_all_docs(
+                    db=self.db_name,
+                    include_docs=True,
+                    limit=limit
+                ).get_result()
+                
+                documents = [row['doc'] for row in response.get('rows', [])]
             
-            documents = [row['doc'] for row in response.get('rows', [])]
             return documents
         except Exception as e:
             logger.error(f"Error al listar transcripciones: {str(e)}")

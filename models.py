@@ -1,7 +1,7 @@
 """
 Modelos Pydantic para validación de datos en VozNota
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 from datetime import datetime
 
@@ -68,3 +68,76 @@ class TranscriptionDocument(BaseModel):
                 "audio_size": 245760
             }
         }
+
+# ============================================================================
+# Modelos de Autenticación de Usuarios
+# ============================================================================
+
+class UserRegister(BaseModel):
+    """Modelo para registro de nuevos usuarios"""
+    email: EmailStr = Field(..., description="Email del usuario (debe ser único)")
+    password: str = Field(..., min_length=6, max_length=72, description="Contraseña (6-72 caracteres)")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "usuario@ejemplo.com",
+                "password": "mipassword123"
+            }
+        }
+
+class UserLogin(BaseModel):
+    """Modelo para login de usuarios"""
+    email: EmailStr = Field(..., description="Email del usuario")
+    password: str = Field(..., description="Contraseña")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "usuario@ejemplo.com",
+                "password": "mipassword123"
+            }
+        }
+
+class UserResponse(BaseModel):
+    """Respuesta con información del usuario (sin password)"""
+    id: str = Field(..., description="ID del usuario en Cloudant")
+    email: EmailStr = Field(..., description="Email del usuario")
+    created_at: str = Field(..., description="Fecha de registro")
+    is_active: bool = Field(default=True, description="Usuario activo")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": "user123abc",
+                "email": "usuario@ejemplo.com",
+                "created_at": "2025-12-01T10:30:00",
+                "is_active": True
+            }
+        }
+
+class Token(BaseModel):
+    """Token de acceso JWT"""
+    access_token: str = Field(..., description="Token JWT")
+    token_type: str = Field(default="bearer", description="Tipo de token")
+    user: UserResponse = Field(..., description="Información del usuario")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "token_type": "bearer",
+                "user": {
+                    "id": "user123abc",
+                    "email": "usuario@ejemplo.com",
+                    "created_at": "2025-12-01T10:30:00",
+                    "is_active": True
+                }
+            }
+        }
+
+class TokenData(BaseModel):
+    """Datos contenidos en el token JWT"""
+    user_id: Optional[str] = None
+    email: Optional[str] = None
+
