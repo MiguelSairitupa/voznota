@@ -334,15 +334,14 @@ async def transcribe_audio(
                 detail=f"Error al guardar la transcripción: {str(e)}"
             )
         
-        # Preparar respuesta con zona horaria de Perú (UTC-5)
-        peru_tz = timezone(timedelta(hours=-5))
-        fecha_peru = datetime.now(peru_tz).isoformat()
+        # Preparar respuesta con UTC para que Flutter lo convierta a hora local
+        fecha_utc = datetime.now(timezone.utc).isoformat()
         
         response = TranscriptionResponse(
             titulo=titulo,
             texto=texto_transcrito,
             id_documento=doc_id,
-            fecha=fecha_peru
+            fecha=fecha_utc
         )
         
         logger.info(f"Transcripción completada exitosamente. ID: {doc_id}")
